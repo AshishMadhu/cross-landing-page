@@ -152,6 +152,8 @@
     mountScenes(el);
     var demo = el.closest('[data-demo]');
     if (demo) applyState(demo);
+    if (RC.initScenes) RC.initScenes(el);
+    if (RC.afterMount) RC.afterMount(el, name);
   };
 
   function mountScenes(root) {
@@ -168,7 +170,7 @@
   };
   RC.states = STATES;
   function applyState(root) {
-    var s = STATES[root.getAttribute('data-state') || 'open'];
+    var s = (RC.states || STATES)[root.getAttribute('data-state') || 'open'];
     root.querySelectorAll('[data-bind]').forEach(function (n) {
       var k = n.getAttribute('data-bind'); var v = s[k];
       if (v !== undefined && n.textContent !== v) { n.textContent = v; n.classList.remove('tick'); void n.offsetWidth; n.classList.add('tick'); }

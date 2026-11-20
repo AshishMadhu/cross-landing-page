@@ -9,7 +9,10 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/favicon.png">
 <link rel="stylesheet" href="assets/common.css">
+<link rel="stylesheet" href="assets/app.css">
 <script src="assets/common.js"></script>
+<script src="assets/scene.js"></script>
+<script src="assets/screens.js"></script>
 <style>
 /* Concept 1 — "Verdict": the whole page is one status-coloured verdict, then it relaxes into a calm light page. */
 .hero{position:relative;color:#fff;overflow:hidden;min-height:100svh;display:flex;flex-direction:column}
@@ -28,7 +31,12 @@ h1{font-size:clamp(42px,6.2vw,80px);line-height:1.02;letter-spacing:-.045em;font
 .lede{font-size:clamp(17px,1.6vw,20px);max-width:30em;color:rgba(255,255,255,.9)}
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
 .fine{margin-top:20px;font-size:13px;color:rgba(255,255,255,.8);max-width:34em}
-.stage{position:relative}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center}
+.hero-phone{--s:1;position:relative}
+.hero-phone::before{content:"";position:absolute;inset:6% -12% 2%;background:rgba(255,255,255,.22);filter:blur(60px);border-radius:50%}
+.hero-phone .phone{position:relative;box-shadow:0 50px 90px -30px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(255,255,255,.12)}
+@media (min-height:860px) and (min-width:981px){.hero-phone{--s:1.1}}
+.sample.on-dark{color:rgba(255,255,255,.8);margin-top:10px}
 .stage .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
 .stage .row .chip{background:rgba(255,255,255,.2);padding:6px 14px;border-radius:99px;font-size:14px}
 .countdown{display:flex;align-items:baseline;gap:14px;line-height:.9;margin:6px 0 4px}
@@ -36,7 +44,7 @@ h1{font-size:clamp(42px,6.2vw,80px);line-height:1.02;letter-spacing:-.045em;font
 .countdown i{font-style:normal;font-size:clamp(26px,3vw,40px);font-weight:700;opacity:.9}
 .stage .sub{font-size:19px;font-weight:600;opacity:.95}
 .stage .scene{margin-top:12px}
-.preview{display:flex;gap:8px;align-items:center;margin-top:14px;font-size:13px;font-weight:700;flex-wrap:wrap}
+.preview{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:22px;font-size:13px;font-weight:700;flex-wrap:wrap}
 .preview button{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:7px 15px;border-radius:99px;font-weight:700;font-size:13px}
 .preview button[aria-pressed="true"]{background:#fff;color:#222}
 .scroll-cue{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75;display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -142,26 +150,24 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 
   <div class="wrap hero-grid">
     <div>
-      <span class="eyebrow"><i></i> Live status for railway level crossings</span>
+      <span class="eyebrow"><i></i> See if a railway gate is open or closed</span>
       <h1>Know before you reach the gate.</h1>
-      <p class="lede">Open, closing or closed. One glance tells you whether to keep going or wait, and how many minutes until the next train comes through.</p>
+      <p class="lede">RailwayCross shows if the gate is open, about to close, or closed. It also tells you how many minutes are left until the next train comes.</p>
       <div class="cta" id="get">
         <a class="btn btn-white" href="#" data-icon="download">Download for Android</a>
         <a class="btn btn-line" href="https://railwaycross.com/" data-icon="globe">Open the web app</a>
       </div>
-      <p class="fine">RailwayCross is a planning aid, not a safety system. Always look, listen and obey the barrier.</p>
+      <p class="fine">RailwayCross helps you plan. It does not keep you safe. Always look, listen and follow the gate.</p>
     </div>
 
-    <div class="stage" aria-live="polite">
-      <div class="row"><span>Gate 14 · Chengannur</span><span class="chip" data-bind="pill">Gate open</span></div>
-      <div class="countdown"><b data-bind="big">18</b><i data-bind="unit">min</i></div>
-      <div class="sub" data-bind="sub">Next: 12625 Kerala Express</div>
-      <div data-scene></div>
-      <div class="preview"><span>Preview a status:</span>
+    <div class="stage">
+      <div class="hero-phone"><div class="phone" data-phone="home" aria-label="The RailwayCross Home screen"></div></div>
+      <div class="preview" role="group" aria-label="Try the three gate states"><span>See each state:</span>
         <button type="button" data-set-state="open" aria-pressed="true">Open</button>
-        <button type="button" data-set-state="closing" aria-pressed="false">Closing</button>
+        <button type="button" data-set-state="closing" aria-pressed="false">Closing soon</button>
         <button type="button" data-set-state="closed" aria-pressed="false">Closed</button>
       </div>
+      <p class="sample on-dark">Sample data. This is the real app screen.</p>
     </div>
   </div>
   <div class="scroll-cue" aria-hidden="true">Scroll<span data-icon="chevron" data-size="18"></span></div>
@@ -171,12 +177,12 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 <section id="how">
   <div class="wrap">
     <div class="kicker reveal">How it works</div>
-    <h2 class="reveal">Three states. No guessing.</h2>
-    <p class="sec-lede reveal">The app reads the timetable and live train positions around you and boils it down to the one thing you need at the gate.</p>
+    <h2 class="reveal">Three colours. No guessing.</h2>
+    <p class="sec-lede reveal">The app checks train times and where trains are right now. Then it gives you one simple answer.</p>
     <div class="steps">
-      <div class="step reveal"><div class="n">1</div><h3>Find crossings near you</h3><p>Allow location once and RailwayCross lists every mapped level crossing within 20 km, nearest first.</p></div>
-      <div class="step reveal"><div class="n">2</div><h3>Match the trains</h3><p>Timetables and live running status are combined to estimate when each train reaches each crossing, delays included.</p></div>
-      <div class="step reveal"><div class="n">3</div><h3>Read the verdict</h3><p>Green means open, amber means a train is close, red means the gate is down. The countdown tells you how long.</p></div>
+      <div class="step reveal"><div class="n">1</div><h3>Find gates near you</h3><p>Allow your location once. RailwayCross shows every railway gate within 20 km, closest first.</p></div>
+      <div class="step reveal"><div class="n">2</div><h3>Check the trains</h3><p>The app looks at train times and delays. Then it works out when each train will reach each gate.</p></div>
+      <div class="step reveal"><div class="n">3</div><h3>Read the colour</h3><p>Green means the gate is open. Orange means a train is close. Red means the gate is closed. The big number shows the minutes.</p></div>
     </div>
   </div>
 </section>
@@ -184,36 +190,36 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 <section id="features" style="padding-top:20px">
   <div class="wrap">
     <div class="kicker reveal">Features</div>
-    <h2 class="reveal">Built for the moment you are approaching a gate.</h2>
+    <h2 class="reveal">Made for the moment you reach a gate.</h2>
     <div class="feat-wrap" style="margin-top:30px">
       <div class="feats">
         <article class="feat on" data-screen="home">
-          <span class="tag"><span data-icon="signal" data-size="18"></span>Verdict home</span>
-          <h3>One screen, one answer.</h3>
-          <p>Your saved or nearest crossing fills the screen in the colour of its status, with a giant countdown and the train that is coming.</p>
-          <ul><li><span data-icon="check" data-size="18"></span>Navigate opens turn-by-turn in your maps app</li><li><span data-icon="check" data-size="18"></span>Save a favourite and it is the first thing you see</li></ul>
+          <span class="tag"><span data-icon="signal" data-size="18"></span>Home</span>
+          <h3>One screen. One answer.</h3>
+          <p>The gate nearest to you fills the screen. The colour tells you if it is open, closing or closed. The big number is how many minutes are left.</p>
+          <ul><li><span data-icon="check" data-size="18"></span>Tap Navigate here to get directions in your maps app</li><li><span data-icon="check" data-size="18"></span>Tap the star to save a gate. It opens first next time</li><li><span data-icon="check" data-size="18"></span>Slide the cards below to check other gates</li></ul>
         </article>
         <article class="feat" data-screen="nearby">
-          <span class="tag"><span data-icon="pin" data-size="18"></span>Nearby</span>
-          <h3>Every crossing around you.</h3>
-          <p>A list and a map side by side. Compare a few crossings on your route and pick the one that is clear.</p>
-          <ul><li><span data-icon="check" data-size="18"></span>Distance, next train and estimated wait</li><li><span data-icon="check" data-size="18"></span>Search by name</li></ul>
+          <span class="tag"><span data-icon="pin" data-size="18"></span>Explore</span>
+          <h3>Every gate around you.</h3>
+          <p>See all the gates near you in a list, or switch to the map. Search by name, or show only the open ones.</p>
+          <ul><li><span data-icon="check" data-size="18"></span>Shows the distance and the minutes to the next train</li><li><span data-icon="check" data-size="18"></span>Filter by Open, Closing soon or Closed</li></ul>
         </article>
         <article class="feat" data-screen="trains">
-          <span class="tag"><span data-icon="train" data-size="18"></span>Live trains</span>
-          <h3>See who is running late.</h3>
-          <p>Live positions and delays for the trains behind the countdowns. Sort by delay, state or train number. It refreshes every minute.</p>
+          <span class="tag"><span data-icon="train" data-size="18"></span>Timetable</span>
+          <h3>See every train that passes.</h3>
+          <p>Pick a gate and a day. You get the list of trains that pass it, with the time each one arrives. Late trains show how many minutes late they are.</p>
         </article>
         <article class="feat" data-screen="planner">
-          <span class="tag"><span data-icon="calendar" data-size="18"></span>Gate planner</span>
-          <h3>Plan around the gates.</h3>
-          <p>See today's open gaps, drag to "if you arrive at 08:40", and check the busiest hours of the week. It all runs on your phone from the timetable, nothing is uploaded.</p>
-          <ul><li><span data-icon="check" data-size="18"></span>Gate-down times are estimates, about 5 minutes per train</li></ul>
+          <span class="tag"><span data-icon="calendar" data-size="18"></span>Planner</span>
+          <h3>Plan when to cross.</h3>
+          <p>See when the gate is open and when it is closed today. Find the best time to cross. The app works this out on your phone from the timetable.</p>
+          <ul><li><span data-icon="check" data-size="18"></span>Closed times are estimates. We count about 5 minutes for each train</li></ul>
         </article>
       </div>
       <div class="sticky" aria-hidden="false">
         <div data-demo data-state="open"><div class="phone" data-phone="home" id="stickyPhone"></div></div>
-        <p class="sample">Illustrative screens with sample data.</p>
+        <p class="sample">Sample data. These are the real app screens.</p>
       </div>
     </div>
   </div>
@@ -221,43 +227,43 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 
 <section class="docs" id="docs">
   <div class="wrap">
-    <div class="kicker reveal">Docs</div>
-    <h2 class="reveal">Everything you need, in one place.</h2>
+    <div class="kicker reveal">Help</div>
+    <h2 class="reveal">How to use the app.</h2>
     <div class="tabs" role="tablist" aria-label="Documentation">
       <button role="tab" aria-selected="true" aria-controls="p1" id="t1">Getting started</button>
-      <button role="tab" aria-selected="false" aria-controls="p2" id="t2">Reading the verdict</button>
-      <button role="tab" aria-selected="false" aria-controls="p3" id="t3">Gate planner</button>
-      <button role="tab" aria-selected="false" aria-controls="p4" id="t4">API</button>
+      <button role="tab" aria-selected="false" aria-controls="p2" id="t2">Reading the colours</button>
+      <button role="tab" aria-selected="false" aria-controls="p3" id="t3">Planner</button>
+      <button role="tab" aria-selected="false" aria-controls="p4" id="t4">For developers</button>
     </div>
 
     <div class="panel" id="p1" role="tabpanel" aria-labelledby="t1">
-      <div><h3>From install to answer in a minute</h3><p>RailwayCross has no accounts and no sign-up.</p>
-        <ol><li><b>Install</b> the app on Android or iOS, or open the web app.</li><li><b>Allow location</b> when asked. It is only used to find crossings within 20 km.</li><li><b>Tap a crossing</b> in the tray to make it the verdict, or tap the hero for full detail.</li><li><b>Save it</b> so it opens first next time.</li></ol></div>
-      <div><div class="note">Location off? The hero shows a prompt instead of a verdict. You can still browse trains and timetables.</div>
-      <p style="margin-top:18px">Prefer a bigger screen? The same crossings, trains and timetables are on the web at <a href="https://railwaycross.com/">railwaycross.com</a>.</p></div>
+      <div><h3>Ready in one minute</h3><p>You do not need an account. There is no sign-up.</p>
+        <ol><li><b>Install</b> the app on your phone, or open the web app.</li><li><b>Allow your location</b> when the app asks. It is only used to find gates within 20 km.</li><li><b>Tap a gate</b> in the Nearby cards to see it on the big screen. Tap the big screen to see more about that gate.</li><li><b>Tap the star</b> to save a gate. It will open first next time.</li></ol></div>
+      <div><div class="note">Location is off? The app asks you to turn it on. Then it shows the gates near you.</div>
+      <p style="margin-top:18px">Want a bigger screen? You can see the same gates and timetables on the web at <a href="https://railwaycross.com/">railwaycross.com</a>.</p></div>
     </div>
 
     <div class="panel" id="p2" role="tabpanel" aria-labelledby="t2" hidden>
-      <div><h3>The colour is the answer</h3><p>The same three colours are used on the hero, the pills and the map, so a status reads the same everywhere.</p></div>
+      <div><h3>The colour tells you what to do</h3><p>The app uses the same three colours everywhere: on the big screen, on the small labels and on the map.</p></div>
       <div class="legend">
-        <div class="it" style="--a:#11823A;--b:#0B6B30"><div><b>Open</b><span>No train expected soon. The countdown shows time to the next one.</span></div><span class="px">Open</span></div>
-        <div class="it" style="--a:#B85A00;--b:#8A3F08"><div><b>Closing</b><span>A train is close. The gate is about to come down.</span></div><span class="px">Closing</span></div>
-        <div class="it" style="--a:#D8352A;--b:#8F1A12"><div><b>Closed</b><span>Gate down, train passing. Shows an estimated wait.</span></div><span class="px">Closed</span></div>
+        <div class="it" style="--a:#11823A;--b:#0B6B30"><div><b>Open</b><span>No train is coming soon. The number shows the minutes until the next train.</span></div><span class="px">Open</span></div>
+        <div class="it" style="--a:#B85A00;--b:#8A3F08"><div><b>Closing soon</b><span>A train is close. The gate will close soon.</span></div><span class="px">Closing soon</span></div>
+        <div class="it" style="--a:#D8352A;--b:#8F1A12"><div><b>Closed</b><span>The gate is down. A train is passing. The app shows about how long to wait.</span></div><span class="px">Closed</span></div>
       </div>
     </div>
 
     <div class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
-      <div><h3>How the planner estimates gates</h3><p>The backend knows when trains pass a crossing, not how long the gate stays down. So the planner assumes each train closes it from 1 minute before to 4 minutes after the crossing time, and live delays shift those windows.</p>
-        <p>Everything is computed on your device from the timetable it already loaded. Estimates are marked with "≈" wherever they appear.</p></div>
-      <div><ol><li><b>Today</b> shows gate-down windows and the open gaps between them.</li><li><b>If you arrive at…</b> lets you scrub to a time and see the verdict for it.</li><li><b>Busiest hours</b> is a weekly heatmap of when gates are down most.</li></ol></div>
+      <div><h3>How the planner guesses closed times</h3><p>The app knows when a train reaches a gate. It does not know how long the gate stays down. So it guesses: the gate closes 1 minute before the train and opens 4 minutes after. If a train is late, the times move.</p>
+        <p>Your phone does all the work. Nothing is sent anywhere. Guessed times have the "≈" sign.</p></div>
+      <div><ol><li><b>Today's gate timeline</b> shows when the gate is closed and when it is open.</li><li><b>Plan ahead</b> lets you pick a time and see if the gate will be open when you arrive.</li><li><b>Next long gap</b> shows the next time the gate stays open for a while.</li></ol></div>
     </div>
 
     <div class="panel" id="p4" role="tabpanel" aria-labelledby="t4" hidden>
-      <div><h3>Public, read-only endpoints</h3><p>The app is a client of the RailwayCross backend. The endpoints it uses need no key or login.</p>
-        <p><b>GET /api/crossings/nearby/</b><br>latitude, longitude, radius (km, app uses 20), with_status=1 to include verdicts.</p>
-        <p><b>GET /api/crossings/&lt;id&gt;/timetable/</b><br>Trains passing a crossing with crossing times.</p>
+      <div><h3>Open data for developers</h3><p>The app gets its data from the RailwayCross server. You do not need a key or a login to read it.</p>
+        <p><b>GET /api/crossings/nearby/</b><br>latitude, longitude and radius (in km; the app uses 20). Add with_status=1 to get open, closing or closed.</p>
+        <p><b>GET /api/crossings/&lt;id&gt;/timetable/</b><br>The trains that pass one gate, with the time each one passes.</p>
         <p><b>GET /api/trains/live/</b><br>sort = delay, state or number.</p>
-        <div class="note">Response shapes can change. Treat this as a guide, not a contract.</div></div>
+        <div class="note">The answers can change in the future. Use this as a guide.</div></div>
 <pre><span class="c"># nearby crossings with status</span>
 curl -G <span class="s">"https://admin.railwaycross.com/api/crossings/nearby/"</span> \
   -d latitude=9.30 -d longitude=76.59 -d radius=20 -d with_status=1
@@ -285,16 +291,16 @@ curl -G <span class="s">"https://admin.railwaycross.com/api/crossings/nearby/"</
 <section id="faq">
   <div class="wrap">
     <div class="kicker reveal">FAQ</div>
-    <h2 class="reveal">Questions, answered.</h2>
+    <h2 class="reveal">Common questions.</h2>
     <div class="faq">
-      <details><summary>Is RailwayCross a safety system?<span data-icon="chevron"></span></summary><p>No. It is a planning aid built on timetables and live running data, and either can be wrong. Never cross against a barrier, signal or siren, and always look and listen yourself.</p></details>
-      <details><summary>How does it know a train is coming?<span data-icon="chevron"></span></summary><p>The backend combines train timetables with live running status, then works out when each train should reach each crossing on its route, including the current delay.</p></details>
-      <details><summary>How accurate is the "gate closed" time?<span data-icon="chevron"></span></summary><p>Train arrival times come from data. Gate-down duration is an estimate: we assume about 5 minutes per train. That is why the planner uses "≈" and says "estimates".</p></details>
-      <details><summary>Do I need an account?<span data-icon="chevron"></span></summary><p>No. There are no accounts. Your saved crossing, theme and alert preferences are kept on your device.</p></details>
-      <details><summary>What happens to my location?<span data-icon="chevron"></span></summary><p>Your coordinates are sent with the nearby-crossings request so the server can find crossings within 20 km. Nothing else about you is collected because there is nothing to sign in to.</p></details>
-      <details><summary>Will I get alerts?<span data-icon="chevron"></span></summary><p>Settings has closure and delay alert toggles that record what you want. Push notification delivery is not switched on yet.</p></details>
-      <details><summary>Does it work offline?<span data-icon="chevron"></span></summary><p>It needs a connection for live data. Without one you get a clear offline state instead of a stale answer.</p></details>
-      <details><summary>A crossing near me is missing.<span data-icon="chevron"></span></summary><p>Crossings come from the backend's mapped data. If one is not there yet, it has not been mapped.</p></details>
+      <details><summary>Is RailwayCross a safety system?<span data-icon="chevron"></span></summary><p>No. It is a tool to help you plan. It uses train times and live train data, and both can be wrong. Never cross when a gate, light or siren says stop. Always look and listen yourself.</p></details>
+      <details><summary>How does it know a train is coming?<span data-icon="chevron"></span></summary><p>The server compares train timetables with live train positions. Then it works out when each train will reach each gate, including any delay.</p></details>
+      <details><summary>How sure is the "closed" time?<span data-icon="chevron"></span></summary><p>The train times come from real data. How long the gate stays down is a guess. We count about 5 minutes for each train. That is why the app uses the "≈" sign.</p></details>
+      <details><summary>Do I need an account?<span data-icon="chevron"></span></summary><p>No. There are no accounts. Your saved gate and your settings stay on your phone.</p></details>
+      <details><summary>What happens to my location?<span data-icon="chevron"></span></summary><p>The app sends your location to the server only to find gates within 20 km. We collect nothing else, because there is nothing to sign in to.</p></details>
+      <details><summary>Will I get alerts?<span data-icon="chevron"></span></summary><p>Settings has switches for gate and delay alerts. They save what you want, but alerts are not switched on yet.</p></details>
+      <details><summary>Does it work without internet?<span data-icon="chevron"></span></summary><p>No. It needs internet to show live data. If you are offline, the app tells you so. It does not show old, wrong answers.</p></details>
+      <details><summary>A gate near me is missing.<span data-icon="chevron"></span></summary><p>The app only shows gates that are already on our map. If yours is missing, it has not been added yet.</p></details>
     </div>
   </div>
 </section>
@@ -302,7 +308,7 @@ curl -G <span class="s">"https://admin.railwaycross.com/api/crossings/nearby/"</
 <div class="final">
   <div class="wrap">
     <div class="box vbg" data-demo data-state="closing">
-      <div><h2>Next time you leave, check the gate first.</h2><p style="font-size:18px;opacity:.92">No accounts or sign-up. Light and dark themes. Android, iOS and web.</p></div>
+      <div><h2>Next time you leave, check the gate first.</h2><p style="font-size:18px;opacity:.92">No account and no sign-up. Light and dark look. Works on Android, iPhone and the web.</p></div>
       <div class="cta" style="margin:0;justify-content:flex-start"><a class="btn btn-white" href="#" data-icon="download">Download for Android</a><a class="btn btn-line" href="#" data-icon="phone">App Store</a></div>
     </div>
   </div>
