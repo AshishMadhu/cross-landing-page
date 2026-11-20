@@ -1,9 +1,8 @@
-# RailwayCross landing pages
+# RailwayCross landing page
 
-Static marketing/launch pages for RailwayCross (no build step). Split out of `mobile_app/landing`.
+Static landing page for RailwayCross (no build step). The app itself lives at https://app.railwaycross.com/.
 
-- `index.html` – concept picker
-- `1-verdict.html`, `2-bento.html`, `3-board.html`, `4-handbook.html` – the four landing concepts
+- `index.html` – the landing page
 - `assets/` – shared CSS/JS, fonts, logo
 
 Preview: `python -m http.server 8080` in this folder, then open http://localhost:8080.
