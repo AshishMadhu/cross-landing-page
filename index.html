@@ -37,6 +37,9 @@
 .top nav{display:flex;gap:26px;margin-left:auto;font-weight:600;font-size:15px}
 .top nav a{color:rgba(255,255,255,.88)}.top nav a:hover{color:#fff}
 .top .theme-toggle{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35);color:#fff}
+.btn-install{background:#111827;color:#fff;border-color:rgba(255,255,255,.55);box-shadow:0 0 0 0 rgba(255,255,255,.7);animation:ring 2.4s ease-out infinite}
+.btn-install:hover{background:#000}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.6)}70%,100%{box-shadow:0 0 0 14px rgba(255,255,255,0)}}
 .top .btn{height:42px;font-size:14px;padding:0 18px;border-radius:13px}
 .hero-grid{position:relative;z-index:2;flex:1;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding:16px 0 56px}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:7px 14px;border-radius:99px;font-weight:700;font-size:13px}
@@ -182,6 +185,7 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
       <a href="#how">How it works</a><a href="#features">Features</a><a href="#install">Install</a><a href="#docs">Docs</a><a href="#faq">FAQ</a>
     </nav>
     <button class="theme-toggle" data-theme-toggle type="button"></button>
+    <a class="btn btn-install" href="#install">Install</a>
     <a class="btn btn-white" href="https://app.railwaycross.com/">Open the app</a>
   </div>
 
@@ -192,8 +196,9 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
       <p class="lede">RailwayCross shows if the gate is open, about to close, or closed. It also tells you how many minutes are left until the next train comes.</p>
       <div class="cta" id="get">
         <a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a>
+        <a class="btn btn-install" href="#install" data-icon="download">Install on your phone</a>
       </div>
-      <p class="fine" style="margin-top:14px">Nothing to install. Open it in your browser and use it right away.</p>
+      <p class="fine" style="margin-top:14px">No app store needed. Open it in your browser, or add it to your home screen in 30 seconds.</p>
       <p class="fine">RailwayCross helps you plan. It does not keep you safe. Always look, listen and follow the gate.</p>
     </div>
 
@@ -349,7 +354,7 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
   <div class="wrap">
     <div class="box vbg" data-demo data-state="closing">
       <div><h2>Next time you leave, check the gate first.</h2><p style="font-size:18px;opacity:.92">No account and no sign-up. Light and dark look. Nothing to install. It works in your browser on any phone or computer.</p></div>
-      <div class="cta" style="margin:0;justify-content:flex-start"><a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a></div>
+      <div class="cta" style="margin:0;justify-content:flex-start"><a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a><a class="btn btn-install" href="#install" data-icon="download">Install</a></div>
     </div>
   </div>
 </div>
