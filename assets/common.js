@@ -209,9 +209,14 @@
     els.forEach(function (e) { io.observe(e); });
   }
   function initTheme() {
-    document.querySelectorAll('[data-theme-toggle]').forEach(function (b) {
-      function paint() { var d = effective() === 'dark'; b.innerHTML = RC.icon(d ? 'sun' : 'moon', 19); b.setAttribute('aria-label', d ? 'Switch to light theme' : 'Switch to dark theme'); }
-      paint();
+    var btns = [].slice.call(document.querySelectorAll('[data-theme-toggle]'));
+    /* Repaint every toggle together, so a page with two (hero + sticky bar) never shows a stale icon. */
+    function paint() {
+      var d = effective() === 'dark';
+      btns.forEach(function (b) { b.innerHTML = RC.icon(d ? 'sun' : 'moon', 19); b.setAttribute('aria-label', d ? 'Switch to light theme' : 'Switch to dark theme'); });
+    }
+    paint();
+    btns.forEach(function (b) {
       b.addEventListener('click', function () { var n = effective() === 'dark' ? 'light' : 'dark'; doc.setAttribute('data-theme', n); save(n); paint(); });
     });
   }

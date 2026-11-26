@@ -156,7 +156,7 @@ h2{font-size:clamp(32px,4.4vw,54px);line-height:1.06;letter-spacing:-.04em;font-
 .sx.on{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
 
 /* ---------- features: sticky phone ---------- */
-#features{padding-top:30px}
+#features{padding-top:30px;overflow-x:clip} /* clip (not hidden) keeps position:sticky working; trims the phone's glow at the screen edge */
 .feat-wrap{display:grid;grid-template-columns:1fr 360px;gap:80px;align-items:start}
 .feats{padding-bottom:16vh}
 .feat{min-height:68vh;display:flex;flex-direction:column;justify-content:center;opacity:.32;transition:opacity .45s var(--ease);max-width:30em}

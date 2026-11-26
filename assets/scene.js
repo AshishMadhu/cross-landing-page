@@ -175,10 +175,14 @@
     L.canvas.width = Math.round(cw * dpr); L.canvas.height = Math.round(HEIGHT * dpr);
     L.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  /* Only canvases that are on screen get drawn: the page has several scenes, most of them scrolled away. */
+  var seen = 'IntersectionObserver' in window ? new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.target.__rc) e.target.__rc.visible = e.isIntersecting; });
+  }) : null;
   function frame(now) {
     for (var i = live.length - 1; i >= 0; i--) {
       var L = live[i];
-      if (!L.canvas.isConnected) { live.splice(i, 1); continue; }
+      if (!L.canvas.isConnected) { if (seen) seen.unobserve(L.canvas); live.splice(i, 1); continue; }
       if (!L.width || L.width !== L.canvas.clientWidth) resize(L);
       if (!L.width) continue;
       var status = statusOf(L.canvas);
@@ -186,6 +190,7 @@
       var story = status === 'closing' || status === 'closed', closed = status === 'closed';
       var elapsed = (now - t0) / 1000;
       var loop = reduce ? 0 : mod(elapsed / CYCLE, 1); L.loop = loop;
+      if (!L.visible) continue;
       var drift = reduce ? 0.2 : mod(elapsed / DRIFT, 1);
       var u = !story ? 0 : reduce ? (closed ? 0.45 : 0.13) : mod(loop + L.offset, 1);
       L.ctx.clearRect(0, 0, L.width, HEIGHT);
@@ -194,10 +199,12 @@
     requestAnimationFrame(frame);
   }
   function mount(canvas) {
-    if (canvas.__rc) return; canvas.__rc = 1;
-    var L = { canvas: canvas, ctx: canvas.getContext('2d'), status: statusOf(canvas), offset: 0, loop: 0, width: 0 };
+    if (canvas.__rc) return;
+    var L = { canvas: canvas, ctx: canvas.getContext('2d'), status: statusOf(canvas), offset: 0, loop: 0, width: 0, visible: !seen };
+    canvas.__rc = L;
     L.offset = startOffset(L.status);
     live.push(L);
+    if (seen) seen.observe(canvas);
   }
   var started = false;
   function scan(root) {
