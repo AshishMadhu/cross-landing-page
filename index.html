@@ -29,144 +29,329 @@
 <script src="assets/scene.js"></script>
 <script src="assets/screens.js"></script>
 <style>
-/* Concept 1 — "Verdict": the whole page is one status-coloured verdict, then it relaxes into a calm light page. */
-.hero{position:relative;color:#fff;overflow:hidden;min-height:100svh;display:flex;flex-direction:column}
-.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(900px 500px at 85% 10%,rgba(255,255,255,.16),transparent 60%),radial-gradient(700px 500px at 0% 100%,rgba(0,0,0,.22),transparent 60%)}
+/* RailwayCross landing.
+   The page is one story: a status-coloured verdict (hero) -> the problem -> how it works -> the app ->
+   a toy you can play with -> install -> help. Each section ends by pulling you into the next. */
+:root{--ease:cubic-bezier(.23,1,.32,1);--ease-io:cubic-bezier(.77,0,.175,1)}
+html{scroll-padding-top:84px}
+body{counter-reset:k}
+h1,h2,h3{text-wrap:balance}
+p,li{text-wrap:pretty}
+.skip{position:absolute;left:12px;top:-64px;z-index:100;background:#fff;color:#0F172A;padding:11px 18px;border-radius:12px;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.skip:focus{top:12px}
+
+/* ---------- reading progress + sticky bar ---------- */
+.progress{position:fixed;inset:0 0 auto 0;height:3px;z-index:90;pointer-events:none}
+.progress i{display:block;height:100%;background:var(--brand);transform-origin:0 50%;transform:scaleX(0)}
+.dock{position:fixed;top:12px;left:50%;z-index:80;width:min(980px,100% - 24px);display:flex;align-items:center;gap:6px;padding:8px 8px 8px 16px;border-radius:99px;
+  background:color-mix(in srgb,var(--sf) 90%,transparent);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);
+  border:1px solid var(--ln);box-shadow:0 18px 40px -20px var(--shadow);
+  transform:translate(-50%,-160%);opacity:0;visibility:hidden;transition:transform .38s var(--ease),opacity .25s ease,visibility 0s .38s}
+.dock.on{transform:translate(-50%,0);opacity:1;visibility:visible;transition-delay:0s}
+.dock .brand{color:var(--tx);font-size:16px;margin-right:auto}
+.dock nav{display:flex;gap:2px;margin-right:6px}
+.dock nav a{padding:8px 13px;border-radius:99px;font-weight:700;font-size:14px;color:var(--mut);transition:background-color .2s,color .2s}
+.dock nav a.on{background:var(--acsoft);color:var(--acd)}
+.dock .theme-toggle{width:40px;height:40px;border-radius:50%}
+.dock .btn{height:40px;padding:0 18px;font-size:14px;border-radius:99px}
+@media (hover:hover) and (pointer:fine){.dock nav a:hover{color:var(--tx)}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;isolation:isolate;color:#fff;overflow:hidden;min-height:100svh;display:flex;flex-direction:column;border-radius:0 0 clamp(28px,5vw,60px) clamp(28px,5vw,60px)}
+.hero::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(900px 500px at 85% 10%,rgba(255,255,255,.16),transparent 60%),radial-gradient(700px 500px at 0% 100%,rgba(0,0,0,.22),transparent 60%)}
+.hero::after{content:"";position:absolute;inset:0;z-index:-1;background-image:radial-gradient(rgba(255,255,255,.2) 1px,transparent 1.5px);background-size:28px 28px;-webkit-mask-image:radial-gradient(ellipse 60% 70% at 72% 42%,#000,transparent 75%);mask-image:radial-gradient(ellipse 60% 70% at 72% 42%,#000,transparent 75%);opacity:.7}
+.orb{position:absolute;z-index:-1;border-radius:50%;filter:blur(70px);pointer-events:none;background:rgba(255,255,255,.18);animation:drift 18s ease-in-out infinite alternate}
+.orb.a{width:380px;height:380px;right:6%;top:8%}
+.orb.b{width:300px;height:300px;left:-6%;bottom:6%;background:rgba(0,0,0,.2);animation-duration:24s;animation-direction:alternate-reverse}
+@keyframes drift{to{transform:translate3d(-60px,40px,0)}}
 .top{position:relative;z-index:5;display:flex;align-items:center;gap:28px;padding:22px 0}
 .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.3px;color:inherit}
-.top nav{display:flex;gap:26px;margin-left:auto;font-weight:600;font-size:15px}
-.top nav a{color:rgba(255,255,255,.88)}.top nav a:hover{color:#fff}
+.top nav{display:flex;gap:24px;margin-left:auto;font-weight:600;font-size:15px}
+.top nav a{color:rgba(255,255,255,.88);transition:color .2s}.top nav a:hover{color:#fff}
 .top .theme-toggle{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35);color:#fff}
 .btn-install{background:#111827;color:#fff;border-color:rgba(255,255,255,.55);box-shadow:0 0 0 0 rgba(255,255,255,.7);animation:ring 2.4s ease-out infinite}
 .btn-install:hover{background:#000}
 @keyframes ring{0%{box-shadow:0 0 0 0 rgba(255,255,255,.6)}70%,100%{box-shadow:0 0 0 14px rgba(255,255,255,0)}}
 .top .btn{height:42px;font-size:14px;padding:0 18px;border-radius:13px}
-.hero-grid{position:relative;z-index:2;flex:1;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding:16px 0 56px}
+.hero-grid{position:relative;z-index:2;flex:1;display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:center;padding:16px 0 120px}
 .eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:7px 14px;border-radius:99px;font-weight:700;font-size:13px}
 .eyebrow i{width:8px;height:8px;border-radius:50%;background:#fff;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{50%{opacity:.35;transform:scale(1.5)}}
 h1{font-size:clamp(42px,6.2vw,80px);line-height:1.02;letter-spacing:-.045em;font-weight:800;margin:22px 0 20px}
+h1 .hl{text-decoration:underline;text-decoration-color:rgba(255,255,255,.5);text-decoration-thickness:.06em;text-underline-offset:.14em}
 .lede{font-size:clamp(17px,1.6vw,20px);max-width:30em;color:rgba(255,255,255,.9)}
 .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
-.fine{margin-top:20px;font-size:13px;color:rgba(255,255,255,.8);max-width:34em}
+.trust{display:flex;flex-wrap:wrap;gap:10px 20px;margin:26px 0 0;padding:0;list-style:none;font-weight:700;font-size:14px}
+.trust li{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.95)}
+.trust .ic{width:20px;height:20px;padding:3px;border-radius:50%;background:rgba(255,255,255,.24)}
+.fine{margin-top:16px;font-size:13px;color:rgba(255,255,255,.8);max-width:34em}
 .stage{position:relative;display:flex;flex-direction:column;align-items:center}
 .hero-phone{--s:1;position:relative}
 .hero-phone::before{content:"";position:absolute;inset:6% -12% 2%;background:rgba(255,255,255,.22);filter:blur(60px);border-radius:50%}
 .hero-phone .phone{position:relative;box-shadow:0 50px 90px -30px rgba(0,0,0,.55),inset 0 0 0 1.5px rgba(255,255,255,.12)}
 @media (min-height:860px) and (min-width:981px){.hero-phone{--s:1.1}}
 .sample.on-dark{color:rgba(255,255,255,.8);margin-top:10px}
-.stage .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-weight:700}
-.stage .row .chip{background:rgba(255,255,255,.2);padding:6px 14px;border-radius:99px;font-size:14px}
-.countdown{display:flex;align-items:baseline;gap:14px;line-height:.9;margin:6px 0 4px}
-.countdown b{font-size:clamp(130px,19vw,260px);font-weight:800;letter-spacing:-.07em;font-variant-numeric:tabular-nums}
-.countdown i{font-style:normal;font-size:clamp(26px,3vw,40px);font-weight:700;opacity:.9}
-.stage .sub{font-size:19px;font-weight:600;opacity:.95}
-.stage .scene{margin-top:12px}
-.preview{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:22px;font-size:13px;font-weight:700;flex-wrap:wrap}
-.preview button{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:7px 15px;border-radius:99px;font-weight:700;font-size:13px}
+.preview{display:flex;gap:6px;align-items:center;justify-content:center;margin-top:22px;font-size:13px;font-weight:700;flex-wrap:wrap}
+.preview>span{margin-right:4px}
+.preview button{background:rgba(255,255,255,.14);border:1.5px solid rgba(255,255,255,.4);color:#fff;padding:7px 15px;border-radius:99px;font-weight:700;font-size:13px;transition:background-color .2s,color .2s,transform .16s var(--ease)}
+.preview button:active{transform:scale(.96)}
 .preview button[aria-pressed="true"]{background:#fff;color:#222}
-.scroll-cue{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.75;display:flex;flex-direction:column;align-items:center;gap:4px}
-.scroll-cue svg{animation:bob 1.6s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(5px)}}
+
+/* ---------- stat strip (half over the hero) ---------- */
+.stats{position:relative;z-index:4;margin-top:-62px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ln);border:1px solid var(--ln);border-radius:28px;overflow:hidden;box-shadow:0 36px 70px -36px var(--shadow)}
+.stat{background:var(--sf);padding:26px 28px}
+.stat b{display:flex;align-items:baseline;gap:6px;font-size:clamp(34px,3.6vw,46px);font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.stat b small{font-size:15px;font-weight:700;letter-spacing:0;color:var(--mut)}
+.stat p{margin-top:10px;font-size:14.5px;color:var(--mut);line-height:1.45}
 
 section{padding:110px 0}
-.kicker{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acd)}
+.kicker{display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--acd)}
+.kicker::before{counter-increment:k;content:counter(k,decimal-leading-zero);display:inline-grid;place-items:center;min-width:30px;height:24px;padding:0 7px;border-radius:99px;background:var(--acsoft);letter-spacing:.04em;font-size:12px}
 h2{font-size:clamp(32px,4.4vw,54px);line-height:1.06;letter-spacing:-.04em;font-weight:800;margin:14px 0 16px}
 .sec-lede{font-size:18px;color:var(--mut);max-width:36em}
 
-/* how it works */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:56px}
-.step{border-top:3px solid var(--tx);padding-top:22px}
-.step:nth-child(1){border-color:var(--ok)}.step:nth-child(2){border-color:var(--warn)}.step:nth-child(3){border-color:var(--bad)}
-.step .n{font-size:84px;font-weight:800;letter-spacing:-.06em;line-height:1;color:var(--tx)}
-.step h3{font-size:22px;letter-spacing:-.02em;margin:14px 0 8px}
-.step p{color:var(--mut)}
+/* ---------- story: words light up as you read ---------- */
+.story{padding:130px 0 70px}
+.story-text{margin-top:22px;font-size:clamp(30px,4.7vw,62px);line-height:1.13;letter-spacing:-.04em;font-weight:800;max-width:21em}
+.story-text .w{color:var(--wc,var(--tx));opacity:.17;transition:opacity .35s var(--ease)}
+.story-text .w.on{opacity:1}
+.story-text .c-ok{--wc:var(--oktx)}.story-text .c-warn{--wc:var(--warntx)}.story-text .c-bad{--wc:var(--badtx)}
+.story-text em{font-style:normal}
+.story-next{display:inline-flex;align-items:center;gap:8px;margin-top:34px;font-weight:700;color:var(--acd)}
+.story-next .ic{transition:transform .25s var(--ease)}
+@media (hover:hover) and (pointer:fine){.story-next:hover .ic{transform:translateY(3px)}}
 
-/* sticky features */
+/* ---------- how it works ---------- */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px}
+.step{background:var(--sf);border:1px solid var(--ln);border-radius:30px;padding:12px 12px 30px;box-shadow:0 24px 48px -34px var(--shadow);transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+@media (hover:hover) and (pointer:fine){.step:hover{transform:translateY(-5px);box-shadow:0 34px 56px -32px var(--shadow)}}
+.vis{position:relative;height:214px;border-radius:22px;overflow:hidden;color:#fff;margin-bottom:24px}
+.vis-tag{position:absolute;left:14px;top:14px;z-index:2;background:rgba(0,0,0,.28);padding:6px 12px;border-radius:99px;font-size:12px;font-weight:700}
+.step .body{padding:0 18px}
+.step .n{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;background:var(--tx);color:var(--pg);font-weight:800;font-size:15px}
+.step h3{font-size:23px;letter-spacing:-.025em;margin:14px 0 8px}
+.step p{color:var(--mut)}
+/* 1: radar */
+.radar{position:absolute;inset:0}
+.radar .r,.radar .ping,.radar .you{position:absolute;left:50%;top:54%}
+.radar .r{border-radius:50%;border:1.5px solid rgba(255,255,255,.32);transform:translate(-50%,-50%)}
+.radar .r1{width:76px;height:76px}.radar .r2{width:150px;height:150px}.radar .r3{width:230px;height:230px;border-color:rgba(255,255,255,.18)}
+.radar .ping{width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:50%;border:2px solid rgba(255,255,255,.6);opacity:0;animation:ping 3.2s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.25);opacity:.9}80%,100%{transform:scale(1);opacity:0}}
+.radar .you{width:16px;height:16px;margin:-8px;border-radius:50%;background:#fff;box-shadow:0 0 0 7px rgba(255,255,255,.28)}
+.radar .pn{position:absolute;left:var(--x);top:var(--y);width:18px;height:18px;margin:-9px;border-radius:50%;background:var(--c);border:3px solid #fff;box-shadow:0 4px 10px rgba(0,0,0,.28)}
+/* 2: train cards */
+.tcards{position:absolute;left:18px;right:18px;top:34px;display:grid;gap:10px}
+.tc{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.97);color:#0F172A;border-radius:16px;padding:12px 14px;box-shadow:0 14px 26px -14px rgba(0,0,0,.45)}
+.tc:nth-child(2){transform:scale(.96);opacity:.88}
+.tc .t{width:60px;flex:none}.tc .t b{display:block;font-size:19px;font-weight:800;letter-spacing:-.5px;line-height:1.1}.tc .t s{display:block;font-size:11px;color:#667085;font-weight:600}
+.tc .i{min-width:0}.tc .i b{display:block;font-size:14px;font-weight:800}.tc .i span{font-size:12px;color:#667085}
+.tc .dp{margin-left:auto;flex:none;padding:4px 10px;border-radius:99px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.tc .dp.warn{background:#FEF0D3;color:#B54708}.tc .dp.ok{background:#DDF7EA;color:#067647}
+/* 3: three colours */
+.states{position:absolute;left:18px;right:18px;top:22px;display:grid;gap:8px}
+.sx{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.97);color:#0F172A;border-radius:14px;padding:11px 14px;font-weight:700;font-size:14px}
+.sx i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.sx b{margin-left:auto;font-variant-numeric:tabular-nums}
+.sx.on{outline:3px solid rgba(255,255,255,.7);outline-offset:2px}
+
+/* ---------- features: sticky phone ---------- */
+#features{padding-top:30px}
 .feat-wrap{display:grid;grid-template-columns:1fr 360px;gap:80px;align-items:start}
-.feats{padding-bottom:20vh}
-.feat{min-height:72vh;display:flex;flex-direction:column;justify-content:center;opacity:.35;transition:opacity .4s;max-width:30em}
+.feats{padding-bottom:16vh}
+.feat{min-height:68vh;display:flex;flex-direction:column;justify-content:center;opacity:.32;transition:opacity .45s var(--ease);max-width:30em}
 .feat.on{opacity:1}
 .feat .tag{display:inline-flex;align-items:center;gap:8px;color:var(--acd);font-weight:800;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.feat .tag em{font-style:normal;margin-left:6px;padding-left:12px;border-left:1.5px solid var(--bd);color:var(--mut);letter-spacing:.04em}
 .feat h3{font-size:clamp(28px,3.4vw,42px);letter-spacing:-.035em;line-height:1.08;margin:12px 0}
 .feat p{color:var(--mut);font-size:17px}
-.feat ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.feat ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
 .feat li{display:flex;gap:10px;align-items:flex-start;font-weight:600}
-.feat li svg{color:var(--ok);margin-top:3px}
-.sticky{position:sticky;top:calc(50vh - 286px)}
-.sticky .phone{margin-inline:auto;--s:1}
+.feat li .ic{color:var(--ok);margin-top:3px}
+.sticky{position:sticky;top:calc(50vh - 300px)}
+.sticky .phone{margin-inline:auto;--s:1;position:relative}
 .sticky .phone .ph-screen{transition:opacity .25s}
-.sticky::before{content:"";position:absolute;inset:8% -14% 4%;background:var(--brand);opacity:.16;filter:blur(70px);border-radius:50%}
-.sticky .phone{position:relative}
-.sample{font-size:12px;color:var(--mut);text-align:center;margin-top:16px}
+.sticky::before{content:"";position:absolute;inset:6% -16% 10%;background:var(--vivid,#3B6BFF);opacity:.2;filter:blur(80px);border-radius:50%;transition:background-color .9s ease}
+.sample{font-size:12px;color:var(--mut);text-align:center;margin-top:12px}
+.fdots{display:flex;justify-content:center;margin-top:16px}
+.fdots button{border:0;background:none;padding:8px 3px;display:grid;place-items:center}
+.fdots button i{display:block;width:6px;height:6px;border-radius:3px;background:var(--bd);transition:width .35s var(--ease),background-color .3s}
+.fdots button.on i{width:22px;background:var(--ac)}
+.feat-phone{display:none}
 
-/* install */
+/* ---------- try it ---------- */
+.try{position:relative;overflow:hidden;margin:0 clamp(10px,1.4vw,20px);border-radius:clamp(28px,4vw,48px);border:1px solid rgba(255,255,255,.07);
+  background:radial-gradient(900px 520px at 92% 0%,rgba(106,77,255,.3),transparent 62%),radial-gradient(760px 520px at 0% 100%,rgba(59,107,255,.22),transparent 62%),#0A1022}
+.try-grid{display:grid;grid-template-columns:1fr 1.08fr;gap:64px;align-items:center}
+.try .kicker{color:#A3BAFF}.try .kicker::before{background:rgba(163,186,255,.16)}
+.try h2{color:#fff}
+.truth{margin:30px 0 28px;padding:0;list-style:none;display:grid;gap:12px}
+.truth li{display:flex;gap:16px;padding:18px 20px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.truth .ti{flex:none;width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:20px}
+.truth .real .ti{background:var(--okbg);color:var(--oktx)}
+.truth .guess .ti{background:repeating-linear-gradient(135deg,rgba(240,68,56,.55) 0 3px,rgba(240,68,56,.28) 3px 6px);color:#fff}
+.truth b{display:block;color:#fff;font-size:16px;margin-bottom:2px}
+.truth p{color:var(--mut);font-size:15px}
+.plan-card{position:relative;overflow:hidden;color:#fff;border-radius:32px;padding:26px 26px 0;box-shadow:0 40px 80px -36px rgba(0,0,0,.75)}
+.plan-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:700}
+.plan-top span{background:rgba(0,0,0,.28);padding:8px 14px;border-radius:99px}
+.plan-state{display:flex;align-items:center;gap:9px;margin-top:26px;font-size:13px;font-weight:800;letter-spacing:.16em}
+.plan-state i{width:9px;height:9px;border-radius:50%;background:#fff;animation:pulse 1.6s ease-in-out infinite}
+/* Fixed height: the card must never change size while you drag, or the slider moves under your finger. */
+.plan-num{display:flex;align-items:baseline;gap:8px;line-height:.9;margin-top:8px;height:clamp(79px,9.9vw,119px)}
+.plan-num b{font-size:clamp(88px,11vw,132px);font-weight:800;letter-spacing:-.06em;font-variant-numeric:tabular-nums}
+.plan-num.word{align-items:center}
+.plan-num.word b{font-size:clamp(50px,6vw,72px);letter-spacing:-.04em;line-height:1}
+.plan-num i{font-style:normal;font-size:clamp(22px,2.4vw,30px);font-weight:700;opacity:.92}
+.plan-cap{font-size:18px;font-weight:700;margin-top:6px}
+.plan-sub{font-size:14.5px;opacity:.94;margin-top:4px;min-height:48px}
+.plan-scene{margin:8px -26px 0}
+.plan-ctl{margin-top:16px;padding:20px 22px 18px;border-radius:26px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.ctl-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;color:#fff;font-weight:800;font-size:15px}
+.ctl-h small{color:var(--mut);font-weight:600;font-size:12.5px}
+.track{position:relative;height:100px;margin:22px 0 10px}
+.pbar{position:absolute;left:14px;right:14px;top:36px;height:22px;border-radius:8px;background:color-mix(in srgb,var(--ok) 30%,#0B1220);
+  background-image:linear-gradient(90deg,rgba(255,255,255,.14) 1.5px,transparent 1.5px);background-size:25% 100%}
+.pbar .cl{position:absolute;top:-4px;bottom:-4px;border-radius:6px;background:repeating-linear-gradient(135deg,var(--bad) 0 3px,rgba(240,68,56,.5) 3px 6px);box-shadow:0 0 0 1.5px rgba(240,68,56,.35)}
+.pbar .tm{position:absolute;top:30px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pbar .tm .ic{color:#fff;opacity:.9}
+.track input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:grab;touch-action:pan-y;-webkit-appearance:none;appearance:none;background:transparent}
+.track input:active{cursor:grabbing}
+.track input::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:80px}
+.track input::-moz-range-thumb{width:28px;height:80px;border:0;background:transparent}
+.knob{position:absolute;top:22px;height:50px;width:28px;margin-left:-14px;left:calc(14px + (100% - 28px) * var(--p,0));pointer-events:none}
+.knob::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;border-radius:2px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.knob::after{content:"";position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px;border-radius:50%;background:#fff;box-shadow:0 6px 16px rgba(0,0,0,.5);border:5px solid #3B6BFF;box-sizing:border-box}
+.knob.hint::after{animation:knobring 1.8s ease-out infinite}
+@keyframes knobring{0%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 0 0 rgba(255,255,255,.55)}80%,100%{box-shadow:0 6px 16px rgba(0,0,0,.5),0 0 0 16px rgba(255,255,255,0)}}
+.track input:focus-visible~.knob::after{outline:3px solid #A3BAFF;outline-offset:3px}
+.kt{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);margin-bottom:4px;background:#fff;color:#0F172A;font-weight:800;font-size:12px;padding:4px 10px;border-radius:99px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.quick button{background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.16);color:#fff;border-radius:99px;padding:8px 15px;font-weight:700;font-size:13px;transition:background-color .2s,transform .16s var(--ease)}
+.quick button:active{transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){.quick button:hover{background:rgba(255,255,255,.14)}}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.facts div{padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.05)}
+.facts small{display:block;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mut)}
+.facts b{display:block;margin-top:3px;color:#fff;font-size:15px;letter-spacing:-.01em}
+.try .sample{color:var(--mut);margin-top:14px}
+
+/* ---------- install ---------- */
+.inst-top{display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center}
+.homeart{display:grid;grid-template-columns:repeat(4,58px);gap:30px 16px;justify-items:center;padding:22px 26px 14px;border-radius:30px;background:var(--sf);border:1px solid var(--ln);box-shadow:0 30px 60px -36px var(--shadow)}
+.homeart .ico{width:58px;height:58px;border-radius:16px;background:var(--subtle)}
+.homeart .ico:nth-child(3n+1){background:var(--acsoft)}.homeart .ico:nth-child(5n){background:var(--okbg)}.homeart .ico:nth-child(7n){background:var(--warnbg)}
+.homeart .ico.mine{grid-column:3;grid-row:2;display:flex;flex-direction:column;align-items:center;gap:5px;width:58px;height:58px;overflow:visible;background:none;font-size:11px;font-weight:700;color:var(--tx);white-space:nowrap}
+.homeart .ico.mine img{width:58px;height:58px;border-radius:16px;box-shadow:0 14px 26px -10px rgba(59,107,255,.7)}
+.js .homeart.reveal .mine{opacity:0;transform:translateY(8px) scale(.85)}
+.js .homeart.reveal.in .mine{opacity:1;transform:none;transition:opacity .4s ease .5s,transform .6s var(--ease) .5s}
 .inst-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:44px}
-.inst{background:var(--sf);border:1.5px solid var(--ln);border-radius:24px;padding:28px}
-.inst.me{border-color:var(--brand);box-shadow:0 20px 40px -26px var(--shadow)}
+.inst{background:var(--sf);border:1.5px solid var(--ln);border-radius:28px;padding:30px}
+.inst.me{border-color:var(--ac);box-shadow:0 24px 48px -28px var(--shadow)}
 .inst-h{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .inst-h h3{font-size:24px;letter-spacing:-.03em}
 .inst-badge{display:none;background:var(--acsoft);color:var(--acd);font-weight:800;font-size:12px;padding:5px 12px;border-radius:99px}
 .inst.me .inst-badge{display:inline-block}
-.inst-n{color:var(--mut);margin:10px 0 16px;font-size:15px}
-.inst ol{padding-left:20px;margin:0;display:grid;gap:12px}
-.inst li{padding-left:6px}.inst li::marker{font-weight:800;color:var(--acd)}
-.inst .ic{vertical-align:-3px;color:var(--acd)}
-.inst-foot{margin-top:24px;font-size:15px}
+.inst-n{color:var(--mut);margin:10px 0 22px;font-size:15px}
+.nlist{counter-reset:s;list-style:none;margin:0;padding:0}
+.nlist li{counter-increment:s;position:relative;padding:5px 0 22px 50px}
+.nlist li:last-child{padding-bottom:0}
+.nlist li::before{content:counter(s);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;font-size:14px;display:grid;place-items:center;box-shadow:0 8px 16px -8px rgba(59,107,255,.8)}
+.nlist li:not(:last-child)::after{content:"";position:absolute;left:16px;top:40px;bottom:6px;width:2px;border-radius:1px;background:var(--ln)}
+.inst .ic{display:inline-block;vertical-align:-3px;color:var(--acd)}
+.inst-foot{margin-top:26px;font-size:15px;display:flex;align-items:flex-start;gap:10px}
+.inst-foot .ic{color:var(--acd);margin-top:2px}
 @media (max-width:980px){.inst-grid{grid-template-columns:1fr}.inst.me{order:-1}}
 
-/* docs */
+/* ---------- docs ---------- */
 .docs{background:var(--sf);border-block:1px solid var(--ln)}
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:36px 0 0;background:var(--subtle);padding:6px;border-radius:18px;width:fit-content;max-width:100%}
-.tabs button{border:0;background:transparent;padding:11px 20px;border-radius:13px;font-weight:700;color:var(--mut);font-size:15px}
+.tabs button{display:inline-flex;align-items:center;gap:8px;border:0;background:transparent;padding:11px 20px;border-radius:13px;font-weight:700;color:var(--mut);font-size:15px;transition:background-color .2s,color .2s,box-shadow .2s}
+.tabs button .ic{width:18px;height:18px}
 .tabs button[aria-selected="true"]{background:var(--sf);color:var(--tx);box-shadow:0 4px 12px -4px var(--shadow)}
-.panel{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.tabs button[aria-selected="true"] .ic{color:var(--acd)}
+.panel{margin-top:22px;padding:36px;background:var(--pg);border:1px solid var(--ln);border-radius:28px;display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start;animation:rise .4s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
 .panel[hidden]{display:none}
 .panel h3{font-size:26px;letter-spacing:-.03em;margin-bottom:12px}
 .panel p{color:var(--mut);margin-bottom:12px}
-.panel ol{padding-left:20px;margin:0;display:grid;gap:12px}
-.panel li{padding-left:6px}.panel li::marker{font-weight:800;color:var(--acd)}
+.panel .nlist{margin-top:20px}
 .legend{display:grid;gap:12px}
 .legend .it{display:flex;gap:14px;align-items:center;border-radius:18px;padding:16px 18px;color:#fff;background:linear-gradient(160deg,var(--a),var(--b))}
 .legend .it b{font-size:17px;display:block}.legend .it span{font-size:14px;opacity:.92}
 .legend .it .px{margin-left:auto;background:rgba(255,255,255,.2);color:#fff}
-pre{margin:0;background:#0B1020;color:#DCE6FF;border-radius:18px;padding:20px 22px;overflow:auto;font:13px/1.65 var(--mono);box-shadow:0 20px 40px -24px rgba(0,0,0,.5)}
-pre .k{color:#8FB0FF}pre .s{color:#7FE3B1}pre .c{color:#7A86A6}
-.note{background:var(--acsoft);color:var(--acd);border-radius:14px;padding:14px 16px;font-weight:600;font-size:14px;margin-top:14px}
+.note{background:var(--acsoft);color:var(--acd);border-radius:14px;padding:14px 16px;font-weight:600;font-size:14px}
 
-/* faq */
-.faq{max-width:860px;margin-top:40px}
-details{border-bottom:1.5px solid var(--ln);padding:6px 0}
-summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 0;font-size:clamp(18px,2vw,22px);font-weight:700;letter-spacing:-.02em}
+/* ---------- faq ---------- */
+.faq-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr);gap:70px;align-items:start}
+.faq-side{position:sticky;top:110px}
+.faq-side .btn{margin-top:26px}
+.faq{display:grid;gap:12px}
+details{background:var(--sf);border:1.5px solid var(--ln);border-radius:22px;padding:0 24px;transition:border-color .25s,box-shadow .25s}
+details[open]{border-color:var(--bd);box-shadow:0 22px 40px -30px var(--shadow)}
+summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;font-size:clamp(17px,1.8vw,20px);font-weight:700;letter-spacing:-.02em;border-radius:14px}
 summary::-webkit-details-marker{display:none}
-summary svg{transition:transform .25s;color:var(--acd)}
-details[open] summary svg{transform:rotate(180deg)}
-details p{color:var(--mut);padding:0 0 22px;max-width:46em;font-size:17px}
+summary .ic{flex:none;width:34px;height:34px;padding:7px;border-radius:50%;background:var(--acsoft);color:var(--acd);transition:transform .3s var(--ease)}
+details[open] summary .ic{transform:rotate(180deg)}
+details p{color:var(--mut);padding:0 0 24px;max-width:44em;font-size:16.5px}
+details[open] p{animation:rise .35s var(--ease) both}
 
-/* closing CTA */
-.final{padding:0 0 80px}
-.final .box{border-radius:36px;color:#fff;padding:clamp(40px,7vw,90px);display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:center;position:relative;overflow:hidden}
-.final .box::after{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border-radius:50%;background:rgba(255,255,255,.1)}
-.final h2{margin-top:0}
-footer{padding:36px 0 60px;border-top:1px solid var(--ln);color:var(--mut);font-size:14px}
-footer .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-footer nav{display:flex;gap:20px;flex-wrap:wrap}
+/* ---------- closing CTA ---------- */
+.final{padding:0 0 40px}
+.final .box{border-radius:clamp(28px,4vw,44px);color:#fff;padding:clamp(40px,6vw,84px);min-height:460px;display:flex;align-items:center;position:relative;overflow:hidden;isolation:isolate}
+.final .box::before{content:"";position:absolute;z-index:-1;right:-120px;top:-140px;width:520px;height:520px;border-radius:50%;background:rgba(255,255,255,.12)}
+.final .box::after{content:"";position:absolute;z-index:-1;left:-90px;bottom:-160px;width:380px;height:380px;border-radius:50%;background:rgba(0,0,0,.14)}
+.fcopy{max-width:560px;position:relative;z-index:2}
+.fcopy .kick{display:inline-block;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.9}
+.final h2{margin:14px 0 16px;font-size:clamp(34px,4.8vw,60px)}
+.fcopy>p{font-size:18px;opacity:.93}
+.final .cta{margin-top:30px}
+.fphone{position:absolute;right:clamp(20px,7vw,110px);top:58px;z-index:1;--s:1}
+.fphone .phone{transform:rotate(5deg);transform-origin:50% 100%;box-shadow:0 50px 90px -30px rgba(0,0,0,.6),inset 0 0 0 1.5px rgba(255,255,255,.12)}
 
+footer{padding:56px 0 64px;color:var(--mut);font-size:14px}
+.foot{display:grid;grid-template-columns:1fr auto;gap:22px 40px;align-items:start}
+.foot .brand{color:var(--tx);font-size:18px}
+.foot-brand p{margin-top:8px;color:var(--mut)}
+footer nav{display:flex;gap:6px 22px;flex-wrap:wrap;justify-content:flex-end;font-weight:600}
+footer nav a{color:var(--mut)}
+@media (hover:hover) and (pointer:fine){footer nav a:hover{color:var(--tx)}}
+.foot .safety{grid-column:1/-1;padding-top:22px;border-top:1px solid var(--ln);display:flex;justify-content:space-between;gap:10px 24px;flex-wrap:wrap}
+
+@media (max-width:1100px){.dock nav a{padding:8px 10px}}
 @media (max-width:980px){
   .top nav{display:none}.top .theme-toggle{margin-left:auto}
-  .hero-grid{grid-template-columns:1fr;gap:34px;padding-top:6px}
-  .scroll-cue{display:none}
-  .steps{grid-template-columns:1fr}
-  .feat-wrap{grid-template-columns:1fr;gap:20px}
-  .sticky{position:relative;top:0;order:-1;margin-bottom:10px}
-  .sticky .phone{--s:.85}
-  .sticky::before{inset:8% 8% 4%}
-  .feat{min-height:auto;opacity:1;padding:26px 0}
+  .dock nav{display:none}
+  .hero-grid{grid-template-columns:1fr;gap:34px;padding:6px 0 100px}
+  .stats{grid-template-columns:1fr 1fr;margin-top:-52px}
+  .steps{grid-template-columns:1fr;gap:18px}
+  .feat-wrap{grid-template-columns:1fr;gap:0}
+  .sticky{display:none}
   .feats{padding-bottom:0}
-  .panel,.final .box{grid-template-columns:1fr}
+  .feat{min-height:auto;opacity:1;padding:34px 0 8px;max-width:none}
+  .feat-phone{display:block;margin-top:26px}
+  .feat-phone .phone{--s:.9;margin-inline:auto}
+  .try-grid,.panel,.faq-grid,.inst-top{grid-template-columns:1fr}
+  .try-grid{gap:44px}
+  .homeart{display:none}
+  .faq-grid{gap:34px}.faq-side{position:static}
+  .panel{padding:26px;gap:26px}
+  .fphone{display:none}
+  .final .box{min-height:0}
   section{padding:80px 0}
+  .story{padding:90px 0 40px}
+  .foot{grid-template-columns:1fr}.foot nav{justify-content:flex-start}
 }
-@media (max-width:520px){.top .btn{display:none}}
+@media (max-width:520px){
+  .top .btn{display:none}
+  .dock{padding-left:12px}.dock .brand{font-size:15px}
+  .stat{padding:22px 20px}
+  .tc{gap:10px;padding:12px}.tc .t{width:52px}.tc .i b{font-size:13px;white-space:nowrap}.tc .dp{padding:4px 8px;font-size:11px}
+  .tabs button{padding:10px 14px;font-size:14px}
+  .plan-card{padding:22px 20px 0}.plan-scene{margin:8px -20px 0}
+  .plan-ctl{padding:18px 16px 16px}
+  .facts{grid-template-columns:1fr}
+}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-1053RW82HZ"></script>
 <script>
@@ -177,12 +362,24 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 </script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="progress" aria-hidden="true"><i id="progress"></i></div>
+
+<div class="dock" id="dock">
+  <a class="brand" href="#top"><span data-logo="28"></span>RailwayCross</a>
+  <nav aria-label="Sections">
+    <a href="#how">How it works</a><a href="#features">Features</a><a href="#try">Try it</a><a href="#install">Install</a><a href="#faq">FAQ</a>
+  </nav>
+  <button class="theme-toggle" data-theme-toggle type="button"></button>
+  <a class="btn btn-brand" href="https://app.railwaycross.com/">Open the app</a>
+</div>
 
 <header class="hero vbg" data-demo data-state="open" id="top">
+  <i class="orb a" aria-hidden="true"></i><i class="orb b" aria-hidden="true"></i>
   <div class="wrap top">
     <a class="brand" href="#top"><span data-logo="34"></span>RailwayCross</a>
     <nav aria-label="Primary">
-      <a href="#how">How it works</a><a href="#features">Features</a><a href="#install">Install</a><a href="#docs">Docs</a><a href="#faq">FAQ</a>
+      <a href="#how">How it works</a><a href="#features">Features</a><a href="#try">Try it</a><a href="#install">Install</a><a href="#docs">Help</a><a href="#faq">FAQ</a>
     </nav>
     <button class="theme-toggle" data-theme-toggle type="button"></button>
     <a class="btn btn-install" href="#install">Install</a>
@@ -192,13 +389,17 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
   <div class="wrap hero-grid">
     <div>
       <span class="eyebrow"><i></i> See if a railway gate is open or closed</span>
-      <h1>Know before you reach the gate.</h1>
+      <h1>Know before you reach the <span class="hl">gate.</span></h1>
       <p class="lede">RailwayCross shows if the gate is open, about to close, or closed. It also tells you how many minutes are left until the next train comes.</p>
       <div class="cta" id="get">
         <a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a>
         <a class="btn btn-install" href="#install" data-icon="download">Install on your phone</a>
       </div>
-      <p class="fine" style="margin-top:14px">No app store needed. Open it in your browser, or add it to your home screen in 30 seconds.</p>
+      <ul class="trust" aria-label="Good to know">
+        <li><span data-icon="check" data-size="20"></span>Free</li>
+        <li><span data-icon="check" data-size="20"></span>No sign-up</li>
+        <li><span data-icon="check" data-size="20"></span>No app store</li>
+      </ul>
       <p class="fine">RailwayCross helps you plan. It does not keep you safe. Always look, listen and follow the gate.</p>
     </div>
 
@@ -212,81 +413,180 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
       <p class="sample on-dark">Sample data. This is the real app screen.</p>
     </div>
   </div>
-  <div class="scroll-cue" aria-hidden="true">Scroll<span data-icon="chevron" data-size="18"></span></div>
 </header>
 
-<main>
+<main id="main">
+<div class="wrap">
+  <div class="stats reveal" id="stats">
+    <div class="stat"><b><span data-count="20">20</span><small>km</small></b><p>Gates around you, closest first</p></div>
+    <div class="stat"><b><span data-count="3">3</span><small>colours</small></b><p>Open, closing or closed</p></div>
+    <div class="stat"><b>0<small>sign-ups</small></b><p>No account. Nothing to install</p></div>
+    <div class="stat"><b>≈5<small>min</small></b><p>Counted for each train</p></div>
+  </div>
+</div>
+
+<section class="story" id="why">
+  <div class="wrap">
+    <div class="kicker reveal">Why RailwayCross</div>
+    <p class="story-text" data-words>You leave on time. You reach the gate. It is <em class="c-bad">closed</em>, and nobody knows for how long. So you wait and watch the clock. RailwayCross tells you before you get there: <em class="c-ok">open</em>, <em class="c-warn">closing</em> or <em class="c-bad">closed</em>, and how many minutes are left.</p>
+    <a class="story-next reveal" href="#how">See how it works <span data-icon="chevron" data-size="18"></span></a>
+  </div>
+</section>
+
 <section id="how">
   <div class="wrap">
     <div class="kicker reveal">How it works</div>
     <h2 class="reveal">Three colours. No guessing.</h2>
     <p class="sec-lede reveal">The app checks train times and where trains are right now. Then it gives you one simple answer.</p>
     <div class="steps">
-      <div class="step reveal"><div class="n">1</div><h3>Find gates near you</h3><p>Allow your location once. RailwayCross shows every railway gate within 20 km, closest first.</p></div>
-      <div class="step reveal"><div class="n">2</div><h3>Check the trains</h3><p>The app looks at train times and delays. Then it works out when each train will reach each gate.</p></div>
-      <div class="step reveal"><div class="n">3</div><h3>Read the colour</h3><p>Green means the gate is open. Orange means a train is close. Red means the gate is closed. The big number shows the minutes.</p></div>
+      <article class="step reveal">
+        <div class="vis vbg" data-state="open" aria-hidden="true">
+          <span class="vis-tag">Within 20 km</span>
+          <div class="radar"><i class="r r1"></i><i class="r r2"></i><i class="r r3"></i><i class="ping"></i><i class="you"></i>
+            <i class="pn" style="--x:24%;--y:34%;--c:#17B26A"></i><i class="pn" style="--x:76%;--y:30%;--c:#F79009"></i><i class="pn" style="--x:68%;--y:80%;--c:#F04438"></i><i class="pn" style="--x:28%;--y:78%;--c:#17B26A"></i>
+          </div>
+        </div>
+        <div class="body"><span class="n">1</span><h3>Find gates near you</h3><p>Allow your location once. RailwayCross shows every railway gate within 20 km, closest first.</p></div>
+      </article>
+      <article class="step reveal" style="--d:90ms">
+        <div class="vis vbg" data-state="closing" aria-hidden="true">
+          <div class="tcards">
+            <div class="tc"><div class="t"><b>10:46</b><s>10:42</s></div><div class="i"><b>Kerala Express</b><span>12625 · running late</span></div><span class="dp warn">+4 min</span></div>
+            <div class="tc"><div class="t"><b>11:05</b></div><div class="i"><b>Parasuram Express</b><span>16649 · on schedule</span></div><span class="dp ok">On time</span></div>
+          </div>
+        </div>
+        <div class="body"><span class="n">2</span><h3>Check the trains</h3><p>The app looks at train times and delays. Then it works out when each train will reach each gate.</p></div>
+      </article>
+      <article class="step reveal" style="--d:180ms">
+        <div class="vis vbg" data-state="closed" aria-hidden="true">
+          <div class="states">
+            <div class="sx"><i style="--c:#17B26A"></i>Open<b>18 min</b></div>
+            <div class="sx"><i style="--c:#F79009"></i>Closing soon<b>3 min</b></div>
+            <div class="sx on"><i style="--c:#F04438"></i>Closed<b>≈4 min</b></div>
+          </div>
+        </div>
+        <div class="body"><span class="n">3</span><h3>Read the colour</h3><p>Green means the gate is open. Orange means a train is close. Red means the gate is closed. The big number shows the minutes.</p></div>
+      </article>
     </div>
   </div>
 </section>
 
-<section id="features" style="padding-top:20px">
+<section id="features">
   <div class="wrap">
     <div class="kicker reveal">Features</div>
     <h2 class="reveal">Made for the moment you reach a gate.</h2>
     <div class="feat-wrap" style="margin-top:30px">
       <div class="feats">
         <article class="feat on" data-screen="home">
-          <span class="tag"><span data-icon="signal" data-size="18"></span>Home</span>
+          <span class="tag"><span data-icon="signal" data-size="18"></span>Home<em>1 / 4</em></span>
           <h3>One screen. One answer.</h3>
           <p>The gate nearest to you fills the screen. The colour tells you if it is open, closing or closed. The big number is how many minutes are left.</p>
           <ul><li><span data-icon="check" data-size="18"></span>Tap Navigate here to get directions in your maps app</li><li><span data-icon="check" data-size="18"></span>Tap the star to save a gate. It opens first next time</li><li><span data-icon="check" data-size="18"></span>Slide the cards below to check other gates</li></ul>
+          <div class="feat-phone" data-demo data-state="open"><div data-mphone="home"></div></div>
         </article>
         <article class="feat" data-screen="nearby">
-          <span class="tag"><span data-icon="pin" data-size="18"></span>Explore</span>
+          <span class="tag"><span data-icon="pin" data-size="18"></span>Explore<em>2 / 4</em></span>
           <h3>Every gate around you.</h3>
           <p>See all the gates near you in a list, or switch to the map. Search by name, or show only the open ones.</p>
           <ul><li><span data-icon="check" data-size="18"></span>Shows the distance and the minutes to the next train</li><li><span data-icon="check" data-size="18"></span>Filter by Open, Closing soon or Closed</li></ul>
+          <div class="feat-phone" data-demo data-state="open"><div data-mphone="nearby"></div></div>
         </article>
         <article class="feat" data-screen="trains">
-          <span class="tag"><span data-icon="train" data-size="18"></span>Timetable</span>
+          <span class="tag"><span data-icon="train" data-size="18"></span>Timetable<em>3 / 4</em></span>
           <h3>See every train that passes.</h3>
           <p>Pick a gate and a day. You get the list of trains that pass it, with the time each one arrives. Late trains show how many minutes late they are.</p>
+          <div class="feat-phone" data-demo data-state="open"><div data-mphone="trains"></div></div>
         </article>
         <article class="feat" data-screen="planner">
-          <span class="tag"><span data-icon="calendar" data-size="18"></span>Planner</span>
+          <span class="tag"><span data-icon="calendar" data-size="18"></span>Planner<em>4 / 4</em></span>
           <h3>Plan when to cross.</h3>
           <p>See when the gate is open and when it is closed today. Find the best time to cross. The app works this out on your phone from the timetable.</p>
           <ul><li><span data-icon="check" data-size="18"></span>Closed times are estimates. We count about 5 minutes for each train</li></ul>
+          <div class="feat-phone" data-demo data-state="open"><div data-mphone="planner"></div></div>
         </article>
       </div>
-      <div class="sticky" aria-hidden="false">
-        <div data-demo data-state="open"><div class="phone" data-phone="home" id="stickyPhone"></div></div>
+      <div class="sticky" data-demo data-state="open">
+        <div><div class="phone" data-phone="home" id="stickyPhone"></div></div>
+        <div class="fdots" id="fdots" role="group" aria-label="Choose a screen">
+          <button type="button" aria-label="Home screen"><i></i></button><button type="button" aria-label="Explore screen"><i></i></button><button type="button" aria-label="Timetable screen"><i></i></button><button type="button" aria-label="Planner screen"><i></i></button>
+        </div>
         <p class="sample">Sample data. These are the real app screens.</p>
       </div>
     </div>
   </div>
 </section>
 
+<section class="try" id="try" data-force="dark">
+  <div class="wrap try-grid">
+    <div>
+      <div class="kicker reveal">Try it</div>
+      <h2 class="reveal">Drag the time. Watch the gate.</h2>
+      <p class="sec-lede reveal">This is the planner. Move the handle to pick when you will reach the gate. The colour and the minutes change with it.</p>
+      <ul class="truth reveal" style="--d:80ms">
+        <li class="real"><span class="ti" data-icon="check" data-size="22"></span><div><b>What we know</b><p>When each train reaches the gate. Train times and delays come from real data.</p></div></li>
+        <li class="guess"><span class="ti">≈</span><div><b>What we guess</b><p>How long the gate stays down. We count 1 minute before the train and 4 minutes after. That is why you see the ≈ sign.</p></div></li>
+      </ul>
+      <a class="btn btn-white reveal" style="--d:140ms" href="https://app.railwaycross.com/" data-icon="globe">Open the real planner</a>
+    </div>
+
+    <div class="reveal" style="--d:100ms">
+      <div class="plan-card vbg" id="planCard" data-state="open">
+        <div class="plan-top"><span>Gate 14 · Aroor</span><span>You reach the gate at <b id="planTime">10:32</b></span></div>
+        <div class="plan-state"><i></i><span id="planPill">OPEN</span></div>
+        <div class="plan-num" id="planNum"><b id="planBig">13</b><i id="planUnit">min</i></div>
+        <div class="plan-cap" id="planCap">until the gate closes</div>
+        <div class="plan-sub" id="planSub">Next: Kerala Express at 10:46</div>
+        <div class="plan-scene" data-scene></div>
+      </div>
+      <div class="plan-ctl">
+        <div class="ctl-h">When do you reach the gate?<small>Sample trains, 10:30 to 12:30</small></div>
+        <div class="track" id="planTrack">
+          <div class="pbar" id="planBar"></div>
+          <input type="range" id="planRange" min="0" max="120" step="1" value="2" aria-label="Time you reach the gate">
+          <div class="knob hint" id="planKnob"><span class="kt" id="planKt">10:32</span></div>
+        </div>
+        <div class="quick" role="group" aria-label="Quick picks">
+          <button type="button" data-t="13">Just before a train</button>
+          <button type="button" data-t="17">Gate is down</button>
+          <button type="button" data-t="60">A long gap</button>
+        </div>
+        <div class="facts"><div><small>Next long gap</small><b id="planGap">11:09 to 11:51</b></div><div><small>Gate down</small><b>≈ 5 min for each train</b></div></div>
+      </div>
+      <p class="sample">Sample trains for one gate. In the app you see the real train times.</p>
+      <span class="sr-only" id="planLive" aria-live="polite"></span>
+    </div>
+  </div>
+</section>
+
 <section id="install">
   <div class="wrap">
-    <div class="kicker reveal">Install</div>
-    <h2 class="reveal">Keep it on your home screen.</h2>
-    <p class="sec-lede reveal">Add RailwayCross to your phone once. It opens like a normal app, full screen, with its own icon. You never need to search for it again.</p>
+    <div class="inst-top">
+      <div>
+        <div class="kicker reveal">Install</div>
+        <h2 class="reveal">Keep it on your home screen.</h2>
+        <p class="sec-lede reveal">Add RailwayCross to your phone once. It opens like a normal app, full screen, with its own icon. You never need to search for it again.</p>
+      </div>
+      <div class="homeart reveal" aria-hidden="true">
+        <i class="ico"></i><i class="ico"></i><i class="ico"></i><i class="ico"></i>
+        <i class="ico"></i><i class="ico"></i><span class="ico mine"><span data-logo="58"></span>RailwayCross</span><i class="ico"></i>
+        <i class="ico"></i><i class="ico"></i><i class="ico"></i><i class="ico"></i>
+      </div>
+    </div>
     <div class="inst-grid">
-      <article class="inst" id="inst-ios">
+      <article class="inst reveal" id="inst-ios">
         <div class="inst-h"><h3>iPhone &amp; iPad</h3><span class="inst-badge">Your device</span></div>
         <p class="inst-n">Use <b>Safari</b>. Other browsers on iPhone may not show the option.</p>
-        <ol>
+        <ol class="nlist">
           <li>Open <a href="https://app.railwaycross.com/">app.railwaycross.com</a> in Safari.</li>
           <li>Tap the <b>Share</b> button <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M8 7l4-4 4 4M5 11v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg> at the bottom of the screen.</li>
           <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
           <li>Tap <b>Add</b>. The RailwayCross icon now appears on your home screen.</li>
         </ol>
       </article>
-      <article class="inst" id="inst-android">
+      <article class="inst reveal" id="inst-android" style="--d:90ms">
         <div class="inst-h"><h3>Android</h3><span class="inst-badge">Your device</span></div>
         <p class="inst-n">Use <b>Chrome</b>. Samsung Internet and Edge work the same way.</p>
-        <ol>
+        <ol class="nlist">
           <li>Open <a href="https://app.railwaycross.com/">app.railwaycross.com</a> in Chrome.</li>
           <li>Tap the <b>menu</b> <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg> at the top right.</li>
           <li>Tap <b>Install app</b>. If you do not see it, tap <b>Add to Home screen</b>.</li>
@@ -294,7 +594,7 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
         </ol>
       </article>
     </div>
-    <p class="sec-lede inst-foot">On a computer? Open the site in Chrome or Edge and click the install icon in the address bar.</p>
+    <p class="sec-lede inst-foot reveal"><span data-icon="globe" data-size="20"></span>On a computer? Open the site in Chrome or Edge and click the install icon in the address bar.</p>
   </div>
 </section>
 
@@ -302,15 +602,15 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
   <div class="wrap">
     <div class="kicker reveal">Help</div>
     <h2 class="reveal">How to use the app.</h2>
-    <div class="tabs" role="tablist" aria-label="Documentation">
-      <button role="tab" aria-selected="true" aria-controls="p1" id="t1">Getting started</button>
-      <button role="tab" aria-selected="false" aria-controls="p2" id="t2">Reading the colours</button>
-      <button role="tab" aria-selected="false" aria-controls="p3" id="t3">Planner</button>
+    <div class="tabs reveal" role="tablist" aria-label="Documentation">
+      <button role="tab" aria-selected="true" aria-controls="p1" id="t1"><span data-icon="bolt" data-size="18"></span>Getting started</button>
+      <button role="tab" aria-selected="false" aria-controls="p2" id="t2"><span data-icon="signal" data-size="18"></span>Reading the colours</button>
+      <button role="tab" aria-selected="false" aria-controls="p3" id="t3"><span data-icon="calendar" data-size="18"></span>Planner</button>
     </div>
 
     <div class="panel" id="p1" role="tabpanel" aria-labelledby="t1">
       <div><h3>Ready in one minute</h3><p>You do not need an account. There is no sign-up.</p>
-        <ol><li><b>Open</b> <a href="https://app.railwaycross.com/">app.railwaycross.com</a> in your browser. There is nothing to install.</li><li><b>Allow your location</b> when the app asks. It is only used to find gates within 20 km.</li><li><b>Tap a gate</b> in the Nearby cards to see it on the big screen. Tap the big screen to see more about that gate.</li><li><b>Tap the star</b> to save a gate. It will open first next time.</li></ol></div>
+        <ol class="nlist"><li><b>Open</b> <a href="https://app.railwaycross.com/">app.railwaycross.com</a> in your browser. There is nothing to install.</li><li><b>Allow your location</b> when the app asks. It is only used to find gates within 20 km.</li><li><b>Tap a gate</b> in the Nearby cards to see it on the big screen. Tap the big screen to see more about that gate.</li><li><b>Tap the star</b> to save a gate. It will open first next time.</li></ol></div>
       <div><div class="note">Location is off? The app asks you to turn it on. Then it shows the gates near you.</div>
       <p style="margin-top:18px">Works on your phone, tablet or computer.</p></div>
     </div>
@@ -327,25 +627,29 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
     <div class="panel" id="p3" role="tabpanel" aria-labelledby="t3" hidden>
       <div><h3>How the planner guesses closed times</h3><p>The app knows when a train reaches a gate. It does not know how long the gate stays down. So it guesses: the gate closes 1 minute before the train and opens 4 minutes after. If a train is late, the times move.</p>
         <p>Your phone does all the work. Nothing is sent anywhere. Guessed times have the "≈" sign.</p></div>
-      <div><ol><li><b>Today's gate timeline</b> shows when the gate is closed and when it is open.</li><li><b>Plan ahead</b> lets you pick a time and see if the gate will be open when you arrive.</li><li><b>Next long gap</b> shows the next time the gate stays open for a while.</li></ol></div>
+      <div><ol class="nlist"><li><b>Today's gate timeline</b> shows when the gate is closed and when it is open.</li><li><b>Plan ahead</b> lets you pick a time and see if the gate will be open when you arrive.</li><li><b>Next long gap</b> shows the next time the gate stays open for a while.</li></ol></div>
     </div>
 
   </div>
 </section>
 
 <section id="faq">
-  <div class="wrap">
-    <div class="kicker reveal">FAQ</div>
-    <h2 class="reveal">Common questions.</h2>
+  <div class="wrap faq-grid">
+    <div class="faq-side">
+      <div class="kicker reveal">FAQ</div>
+      <h2 class="reveal">Common questions.</h2>
+      <p class="sec-lede reveal">Short answers, in plain words. Still not sure? Open the app and try it. It takes a minute.</p>
+      <a class="btn btn-brand reveal" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a>
+    </div>
     <div class="faq">
-      <details><summary>Is RailwayCross a safety system?<span data-icon="chevron"></span></summary><p>No. It is a tool to help you plan. It uses train times and live train data, and both can be wrong. Never cross when a gate, light or siren says stop. Always look and listen yourself.</p></details>
-      <details><summary>How does it know a train is coming?<span data-icon="chevron"></span></summary><p>The server compares train timetables with live train positions. Then it works out when each train will reach each gate, including any delay.</p></details>
-      <details><summary>How sure is the "closed" time?<span data-icon="chevron"></span></summary><p>The train times come from real data. How long the gate stays down is a guess. We count about 5 minutes for each train. That is why the app uses the "≈" sign.</p></details>
-      <details><summary>Do I need an account?<span data-icon="chevron"></span></summary><p>No. There are no accounts. Your saved gate and your settings stay in your browser on this device.</p></details>
-      <details><summary>What happens to my location?<span data-icon="chevron"></span></summary><p>The app sends your location to the server only to find gates within 20 km. We do not collect names or accounts. We use anonymous visit statistics (Google Analytics) on this website to see how many people visit.</p></details>
-      <details><summary>Will I get alerts?<span data-icon="chevron"></span></summary><p>Settings has switches for gate and delay alerts. They save what you want, but alerts are not switched on yet.</p></details>
-      <details><summary>Does it work without internet?<span data-icon="chevron"></span></summary><p>No. It needs internet to show live data. If you are offline, the app tells you so. It does not show old, wrong answers.</p></details>
-      <details><summary>A gate near me is missing.<span data-icon="chevron"></span></summary><p>The app only shows gates that are already on our map. If yours is missing, it has not been added yet.</p></details>
+      <details name="faq" open><summary>Is RailwayCross a safety system?<span data-icon="chevron"></span></summary><p>No. It is a tool to help you plan. It uses train times and live train data, and both can be wrong. Never cross when a gate, light or siren says stop. Always look and listen yourself.</p></details>
+      <details name="faq"><summary>How does it know a train is coming?<span data-icon="chevron"></span></summary><p>The server compares train timetables with live train positions. Then it works out when each train will reach each gate, including any delay.</p></details>
+      <details name="faq"><summary>How sure is the "closed" time?<span data-icon="chevron"></span></summary><p>The train times come from real data. How long the gate stays down is a guess. We count about 5 minutes for each train. That is why the app uses the "≈" sign.</p></details>
+      <details name="faq"><summary>Do I need an account?<span data-icon="chevron"></span></summary><p>No. There are no accounts. Your saved gate and your settings stay in your browser on this device.</p></details>
+      <details name="faq"><summary>What happens to my location?<span data-icon="chevron"></span></summary><p>The app sends your location to the server only to find gates within 20 km. We do not collect names or accounts. We use anonymous visit statistics (Google Analytics) on this website to see how many people visit.</p></details>
+      <details name="faq"><summary>Will I get alerts?<span data-icon="chevron"></span></summary><p>Settings has switches for gate and delay alerts. They save what you want, but alerts are not switched on yet.</p></details>
+      <details name="faq"><summary>Does it work without internet?<span data-icon="chevron"></span></summary><p>No. It needs internet to show live data. If you are offline, the app tells you so. It does not show old, wrong answers.</p></details>
+      <details name="faq"><summary>A gate near me is missing.<span data-icon="chevron"></span></summary><p>The app only shows gates that are already on our map. If yours is missing, it has not been added yet.</p></details>
     </div>
   </div>
 </section>
@@ -353,47 +657,204 @@ footer nav{display:flex;gap:20px;flex-wrap:wrap}
 <div class="final">
   <div class="wrap">
     <div class="box vbg" data-demo data-state="closing">
-      <div><h2>Next time you leave, check the gate first.</h2><p style="font-size:18px;opacity:.92">No account and no sign-up. Light and dark look. Nothing to install. It works in your browser on any phone or computer.</p></div>
-      <div class="cta" style="margin:0;justify-content:flex-start"><a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a><a class="btn btn-install" href="#install" data-icon="download">Install</a></div>
+      <div class="fcopy">
+        <span class="kick">Ready when you are</span>
+        <h2>Next time you leave, check the gate first.</h2>
+        <p>No account and no sign-up. Light and dark look. Nothing to install. It works in your browser on any phone or computer.</p>
+        <div class="cta"><a class="btn btn-white" href="https://app.railwaycross.com/" data-icon="globe">Open the app</a><a class="btn btn-install" href="#install" data-icon="download">Install</a></div>
+      </div>
+      <div class="fphone" aria-hidden="true"><div class="phone" data-phone="nearby"></div></div>
     </div>
   </div>
 </div>
 </main>
 
 <footer>
-  <div class="wrap">
-    <span class="brand" style="color:var(--tx);font-size:16px"><span data-logo="26"></span>RailwayCross · <span data-year></span></span>
-    <nav><a href="#how">How it works</a><a href="#install">Install</a><a href="#docs">Docs</a><a href="#faq">FAQ</a><a href="https://app.railwaycross.com/">Open the app</a></nav>
+  <div class="wrap foot">
+    <div class="foot-brand"><span class="brand"><span data-logo="30"></span>RailwayCross</span><p>Know before you reach the gate.</p></div>
+    <nav aria-label="Footer"><a href="#how">How it works</a><a href="#try">Try it</a><a href="#install">Install</a><a href="#docs">Help</a><a href="#faq">FAQ</a><a href="https://app.railwaycross.com/">Open the app</a></nav>
+    <p class="safety"><span>RailwayCross helps you plan. It does not keep you safe. Always look, listen and follow the gate.</span><span>© <span data-year></span> RailwayCross</span></p>
   </div>
 </footer>
 
 <script>
 (function(){
-  // Sticky phone swaps screen as each feature scrolls into the middle of the viewport.
-  var phone=document.getElementById('stickyPhone'),feats=[].slice.call(document.querySelectorAll('.feat')),cur='home';
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $=function(s,r){return (r||document).querySelector(s)},$$=function(s,r){return [].slice.call((r||document).querySelectorAll(s))};
+
+  /* ---- Sticky phone swaps screen as each feature scrolls into the middle of the viewport ---- */
+  var phone=$('#stickyPhone'),feats=$$('.feat'),dots=$$('#fdots button'),cur='home';
+  function setDots(i){dots.forEach(function(d,j){d.classList.toggle('on',j===i)})}
+  setDots(0);
   if('IntersectionObserver' in window){
     var io=new IntersectionObserver(function(es){es.forEach(function(e){
       if(!e.isIntersecting)return;
       var n=e.target.getAttribute('data-screen');
       feats.forEach(function(f){f.classList.toggle('on',f===e.target)});
+      setDots(feats.indexOf(e.target));
       if(n===cur)return;cur=n;
       var s=phone.querySelector('.ph-screen');if(s)s.style.opacity=0;
       setTimeout(function(){RC.mountPhone(phone,n)},180);
     })},{rootMargin:'-45% 0px -45% 0px'});
     feats.forEach(function(f){io.observe(f)});
   }
-  // Highlight install steps for the visitor's device
+  dots.forEach(function(d,i){d.addEventListener('click',function(){feats[i].scrollIntoView({block:'center',behavior:reduce?'auto':'smooth'})})});
+
+  /* ---- On small screens every feature carries its own phone, so the picture always matches the words ---- */
+  var small=window.matchMedia('(max-width:980px)'),mounted=false;
+  function mountSmall(){
+    if(mounted||!small.matches)return;mounted=true;
+    $$('[data-mphone]').forEach(function(el){RC.mountPhone(el,el.getAttribute('data-mphone'))});
+  }
+  mountSmall();
+  if(small.addEventListener)small.addEventListener('change',mountSmall);
+
+  /* ---- Highlight install steps for the visitor's device ---- */
   var ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
       and=/Android/.test(ua),me=document.getElementById(ios?'inst-ios':and?'inst-android':'');
   if(me)me.classList.add('me');
-  // Docs tabs
-  var tabs=[].slice.call(document.querySelectorAll('[role=tab]'));
+
+  /* ---- Docs tabs ---- */
+  var tabs=$$('[role=tab]');
   tabs.forEach(function(t){t.addEventListener('click',function(){
     tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);document.getElementById(x.getAttribute('aria-controls')).hidden=!on});
   });t.addEventListener('keydown',function(e){
     var i=tabs.indexOf(t),n=e.key==='ArrowRight'?i+1:e.key==='ArrowLeft'?i-1:null;
     if(n!==null){tabs[(n+tabs.length)%tabs.length].focus();tabs[(n+tabs.length)%tabs.length].click()}
   })});
+
+  /* ---- Words that light up as you read ---- */
+  var story=$('[data-words]'),words=[];
+  if(story){
+    (function wrap(node){
+      [].slice.call(node.childNodes).forEach(function(c){
+        if(c.nodeType===3){
+          var frag=document.createDocumentFragment();
+          c.textContent.split(/(\s+)/).forEach(function(p){
+            if(!p)return;
+            if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));return}
+            var s=document.createElement('span');s.className='w';s.textContent=p;frag.appendChild(s);words.push(s);
+          });
+          node.replaceChild(frag,c);
+        }else if(c.nodeType===1)wrap(c);
+      });
+    })(story);
+    if(reduce)words.forEach(function(w){w.classList.add('on')});
+  }
+  var lit=-1;
+  function readWords(){
+    if(!words.length||reduce)return;
+    var r=story.getBoundingClientRect(),vh=window.innerHeight;
+    var p=Math.min(1,Math.max(0,(vh*.82-r.top)/(r.height+vh*.3)));
+    var k=Math.round(p*words.length);
+    if(k===lit)return;lit=k;
+    for(var i=0;i<words.length;i++)words[i].classList.toggle('on',i<k);
+  }
+
+  /* ---- Progress bar, sticky bar, active section ---- */
+  var bar=$('#progress'),dock=$('#dock'),hero=$('#top'),links=$$('#dock nav a'),ticking=false;
+  function onScroll(){
+    ticking=false;
+    var h=document.documentElement,max=h.scrollHeight-window.innerHeight,y=window.scrollY;
+    bar.style.transform='scaleX('+(max>0?Math.min(1,y/max):0)+')';
+    dock.classList.toggle('on',y>hero.offsetHeight*.6);
+    readWords();
+  }
+  function req(){if(!ticking){ticking=true;requestAnimationFrame(onScroll)}}
+  window.addEventListener('scroll',req,{passive:true});window.addEventListener('resize',req);
+  onScroll();
+  if('IntersectionObserver' in window){
+    var sec=new IntersectionObserver(function(es){es.forEach(function(e){
+      if(!e.isIntersecting)return;
+      links.forEach(function(a){a.classList.toggle('on',a.getAttribute('href')==='#'+e.target.id)});
+    })},{rootMargin:'-45% 0px -50% 0px'});
+    ['how','features','try','install','faq'].forEach(function(id){var s=document.getElementById(id);if(s)sec.observe(s)});
+  }
+
+  /* ---- Stat numbers count up once ---- */
+  var stats=$('#stats');
+  if(stats&&'IntersectionObserver' in window&&!reduce){
+    var counted=false,cio=new IntersectionObserver(function(es){
+      if(!es[0].isIntersecting||counted)return;counted=true;cio.disconnect();
+      $$('[data-count]').forEach(function(n){
+        var to=+n.getAttribute('data-count'),t0=performance.now();n.textContent='0';
+        (function step(now){var p=Math.min(1,(now-t0)/900);n.textContent=Math.round(to*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)})(t0);
+      });
+    },{threshold:.6});
+    cio.observe(stats);
+  }
+
+  /* ---- The planner you can play with ---- */
+  var card=$('#planCard');
+  if(card){
+    var T0=630,N=120,PRE=1,POST=4,SOON=5; // 10:30 start, 2 hours; gate down 1 min before and 4 min after a train
+    var TR=[{t:16,n:'Kerala Express'},{t:35,n:'Parasuram Express'},{t:82,n:'Mangala Lakshadweep'},{t:110,n:'Venad Express'}];
+    var range=$('#planRange'),knob=$('#planKnob'),kt=$('#planKt'),barEl=$('#planBar'),live=$('#planLive'),
+        elTime=$('#planTime'),elPill=$('#planPill'),elBig=$('#planBig'),elUnit=$('#planUnit'),elCap=$('#planCap'),elSub=$('#planSub'),elNum=$('#planNum');
+    function fmt(m){var a=T0+m,h=Math.floor(a/60),mm=a%60;return h+':'+(mm<10?'0':'')+mm}
+    // Draw the closed windows (hatched = a guess) and the real train times
+    barEl.innerHTML=TR.map(function(r){
+      var l=(r.t-PRE)/N*100,w=(PRE+POST)/N*100;
+      return '<i class="cl" style="left:'+l+'%;width:'+w+'%"></i><span class="tm" style="left:'+(r.t/N*100)+'%">'+RC.icon('train',14)+fmt(r.t)+'</span>';
+    }).join('');
+    // Biggest open gap between two trains
+    var gap={a:0,b:0,len:0};
+    for(var i=0;i<TR.length-1;i++){var a=TR[i].t+POST,b=TR[i+1].t-PRE;if(b-a>gap.len)gap={a:a,b:b,len:b-a}}
+    $('#planGap').textContent=fmt(gap.a)+' to '+fmt(gap.b);
+
+    function calc(t){
+      for(var i=0;i<TR.length;i++){
+        var s=TR[i].t-PRE,e=TR[i].t+POST;
+        if(t>=s&&t<e)return{st:'closed',i:i,left:e-t};
+        if(t<s)return{st:s-t<=SOON?'closing':'open',i:i,left:s-t};
+      }
+      return{st:'done'};
+    }
+    var prev='';
+    function render(v,announce){
+      v=Math.max(0,Math.min(N,Math.round(v)));
+      knob.style.setProperty('--p',v/N);
+      var time=fmt(v);kt.textContent=time;elTime.textContent=time;range.setAttribute('aria-valuetext',time);
+      var c=calc(v),st=c.st==='done'?'open':c.st,r=TR[c.i];
+      var pill={open:'OPEN',closing:'CLOSING SOON',closed:'CLOSED'}[st],big,unit,cap,sub;
+      if(c.st==='done'){big='No train';unit='';cap='left in this sample list';sub='The gate stays open for the rest of this list.'}
+      else if(c.st==='closed'){big=c.left;unit='min';cap='until the gates reopen ≈';sub=r.n+' is passing · gate down ≈ '+fmt(r.t-PRE)+' to '+fmt(r.t+POST)}
+      else{big=c.left;unit='min';cap='until the gate closes';sub='Next: '+r.n+' at '+fmt(r.t)}
+      elBig.textContent=big;elUnit.textContent=unit;elCap.textContent=cap;elSub.textContent=sub;
+      elNum.classList.toggle('word',c.st==='done');
+      if(prev!==c.st){
+        elPill.textContent=pill;card.setAttribute('data-state',st);
+        if(prev){elNum.classList.remove('tick');void elNum.offsetWidth;elNum.classList.add('tick')}
+        prev=c.st;
+      }
+      if(announce)live.textContent=time+': '+pill.toLowerCase()+(typeof big==='number'?', '+big+' minutes':'');
+    }
+    var touched=false,raf=0;
+    function stopTween(){cancelAnimationFrame(raf)}
+    function tweenTo(to,ms){
+      stopTween();var from=+range.value,t0=performance.now();
+      if(reduce){range.value=to;render(to);return}
+      (function step(now){
+        var p=Math.min(1,(now-t0)/ms),e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2,v=Math.round(from+(to-from)*e);
+        range.value=v;render(v);if(p<1)raf=requestAnimationFrame(step);
+      })(t0);
+    }
+    function touch(){if(!touched){touched=true;knob.classList.remove('hint')}stopTween()}
+    range.addEventListener('pointerdown',touch);range.addEventListener('keydown',touch);range.addEventListener('touchstart',touch,{passive:true});
+    range.addEventListener('input',function(){touch();render(+range.value)});
+    range.addEventListener('change',function(){render(+range.value,true)});
+    $$('.quick button').forEach(function(b){b.addEventListener('click',function(){touch();tweenTo(+b.getAttribute('data-t'),520);setTimeout(function(){render(+range.value,true)},560)})});
+    render(+range.value);
+    // First time it scrolls into view, slide the handle across a train so the three states show themselves.
+    if('IntersectionObserver' in window){
+      var once=new IntersectionObserver(function(es){
+        if(!es[0].isIntersecting)return;once.disconnect();
+        if(touched)return;
+        setTimeout(function(){if(!touched)tweenTo(18,3200)},700);
+      },{threshold:.55});
+      once.observe(card);
+    }
+  }
 })();
 </script>
 </body>
